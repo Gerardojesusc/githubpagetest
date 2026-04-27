@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#050510">
+    <title>Gestor Escolar Ultra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        :root {
+            --bg: #050510;
+            --card: rgba(255, 255, 255, 0.05);
+            --accent: #7c3aed;
+            --accent-glow: rgba(124, 58, 237, 0.4);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --red: #ff4d4d;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
+
+        .app-container { width: 100%; max-width: 420px; margin: 0 auto; min-height: 100vh; position: relative; padding-bottom: 120px; }
+        .hidden { display: none !important; }
+
+        header { padding: 50px 24px 20px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 24px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px 5px; text-align: center; }
+        .stat-num { font-size: 1.4rem; font-weight: 800; display: block; }
+        .stat-label { font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 10px; padding: 20px 24px; }
+        .tab { background: transparent; color: var(--text-dim); border: none; font-weight: 700; padding: 10px 15px; border-radius: 12px; cursor: pointer; transition: 0.3s; }
+        .tab.active { background: var(--accent); color: white; }
+
+        /* Items */
+        .item-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 18px; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .checkbox { width: 24px; height: 24px; border-radius: 8px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; color: white; }
+        .checkbox.checked { background: var(--accent); border-color: var(--accent); }
+
+        /* Bottom Nav con Iconos */
+        .bottom-nav { 
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 380px; height: 70px;
+            background: rgba(15, 15, 30, 0.95); backdrop-filter: blur(20px); 
+            border: 1px solid var(--border); border-radius: 25px;
+            display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; z-index: 1000;
+        }
+        .nav-item { color: var(--text-dim); border: none; background: none; cursor: pointer; justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.3s; }
+        .nav-item i { width: 22px; height: 22px; }
+        .nav-item.active { color: var(--accent); }
+        
+        .fab-wrapper { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        .fab { 
+            width: 60px; height: 60px; background: var(--accent); border-radius: 20px; 
+            border: none; color: white; cursor: pointer;
+            position: absolute; top: -30px; 
+            box-shadow: 0 10px 25px var(--accent-glow);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .fab i { width: 30px; height: 30px; }
+
+        /* Modales */
+        .bottom-sheet { position: fixed; bottom: 0; width: 100%; max-width: 420px; background: #0f0f1a; border-radius: 30px 30px 0 0; padding: 30px 24px; z-index: 2000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-top: 1px solid var(--border); }
+        .bottom-sheet.active { transform: translateY(0); }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 1500; display: none; }
+        .overlay.active { display: block; }
+
+        .form-control { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; padding: 14px; border-radius: 14px; margin-bottom: 12px; outline: none; }
+        .btn { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-primary { background: var(--accent); color: white; }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-dim); }
+        .empty-state i { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.5; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div id="view-home">
+        <header>
+            <div><h1>Hola ✨</h1><p id="header-date" style="color: var(--text-dim); font-size: 0.8rem;"></p></div>
+            <button onclick="openSheet('sheet-subjects')" style="background:var(--card); border:1px solid var(--border); padding:10px 15px; border-radius:12px; color:white; display:flex; align-items:center; gap:8px; font-size: 0.8rem;">
+                <i data-lucide="book-open" style="width:16px;"></i> Materias
+            </button>
+        </header>
+        <div class="stats-grid">
+            <div class="stat-card"><span class="stat-num" id="count-total">0</span><span class="stat-label">Total</span></div>
+            <div class="stat-card"><span class="stat-num" id="count-pend">0</span><span class="stat-label">Pendientes</span></div>
+            <div class="stat-card"><span class="stat-num" id="count-done">0</span><span class="stat-label">Listas</span></div>
+        </div>
+        <div class="tabs">
+            <button class="tab active" onclick="setFilter('all', this)">Todas</button>
+            <button class="tab" onclick="setFilter('pending', this)">Pendientes</button>
+        </div>
+        <div id="main-task-list" style="padding:0 24px;"></div>
+    </div>
+
+    <div id="view-files" class="hidden">
+        <header><div><h1>Librería</h1><p style="color:var(--text-dim); font-size:0.8rem;">Tus documentos de estudio</p></div></header>
+        <div style="padding:0 24px 20px;">
+            <button class="btn" onclick="openSheet('sheet-upload')" style="background:var(--card); border:1px dashed var(--border); color:white;">
+                <i data-lucide="upload-cloud"></i> Subir Recurso
+            </button>
+        </div>
+        <div id="main-file-list" style="padding:0 24px;"></div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="showView('home', this)">
+            <i data-lucide="layout-grid"></i>
+            <span style="font-size:0.6rem; font-weight:700;">Inicio</span>
+        </button>
+        <div class="fab-wrapper">
+            <button class="fab" onclick="openTaskSheet()">
+                <i data-lucide="plus"></i>
+            </button>
+        </div>
+        <button class="nav-item" onclick="showView('files', this)">
+            <i data-lucide="folder-closed"></i>
+            <span style="font-size:0.6rem; font-weight:700;">Archivos</span>
+        </button>
+    </nav>
+
+    <div class="overlay" id="global-overlay" onclick="closeSheets()"></div>
+
+    <div class="bottom-sheet" id="sheet-upload">
+        <h2 style="margin-bottom:20px;">Subir Recurso</h2>
+        <input type="text" id="file-name" class="form-control" placeholder="Nombre del recurso">
+        <select id="file-sub" class="form-control"></select>
+        <input type="file" id="file-input" class="form-control" accept="application/pdf,image/*">
+        <button class="btn btn-primary" onclick="processAndSaveFile()">
+            <i data-lucide="save"></i> Guardar Recurso
+        </button>
+    </div>
+
+    <div class="bottom-sheet" id="sheet-task">
+        <h2 id="sheet-task-title" style="margin-bottom:20px;">Tarea</h2>
+        <input type="text" id="task-title" class="form-control" placeholder="Título de la tarea">
+        <select id="task-sub" class="form-control"></select>
+        <input type="date" id="task-date" class="form-control">
+        <button class="btn btn-primary" onclick="saveTask()">
+            <i data-lucide="check-circle"></i> Confirmar
+        </button>
+        <button class="btn" id="sheet-task-del" onclick="deleteTask()" style="display:none; color:var(--red); background:none; margin-top:10px;">
+            <i data-lucide="trash-2"></i> Eliminar Tarea
+        </button>
+    </div>
+
+    <div class="bottom-sheet" id="sheet-subjects">
+        <h2 style="margin-bottom:20px;">Materias</h2>
+        <div id="subject-editor-list" style="max-height: 250px; overflow-y: auto;"></div>
+        <button class="btn" onclick="addNewSubjectField()" style="background:var(--card); color:white; margin:10px 0;">
+            <i data-lucide="plus-circle"></i> Nueva Materia
+        </button>
+        <button class="btn btn-primary" onclick="saveAllSubjects()">Aplicar</button>
+    </div>
+</div>
+
+<script>
+    let db;
+    let state = { tasks: [], subs: [], filter: 'all' };
+    let currentEditId = null;
+
+    // IndexedDB
+    const request = indexedDB.open("EscolarDB", 1);
+    request.onupgradeneeded = e => {
+        db = e.target.result;
+        if (!db.objectStoreNames.contains("files")) db.createObjectStore("files", { keyPath: "id", autoIncrement: true });
+    };
+    request.onsuccess = e => { db = e.target.result; init(); };
+
+    function init() {
+        state.tasks = JSON.parse(localStorage.getItem('tp_tasks') || '[]');
+        state.subs = JSON.parse(localStorage.getItem('tp_subs') || '[{"id":"1","name":"General","color":"#7c3aed"}]');
+        document.getElementById('header-date').textContent = new Date().toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' });
+        renderAll();
+    }
+
+    function renderAll() {
+        renderTasks();
+        renderFiles();
+        updateSelects();
+        lucide.createIcons(); // Inicializa los iconos cada vez que renderizamos
+    }
+
+    // Archivos
+    async function processAndSaveFile() {
+        const name = document.getElementById('file-name').value;
+        const subId = document.getElementById('file-sub').value;
+        const file = document.getElementById('file-input').files[0];
+        if(!name || !file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const transaction = db.transaction(["files"], "readwrite");
+            const store = transaction.objectStore("files");
+            await store.add({ name, subId, base64: e.target.result, type: file.type });
+            renderFiles();
+            closeSheets();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function renderFiles() {
+        const list = document.getElementById('main-file-list');
+        list.innerHTML = '';
+        const transaction = db.transaction(["files"], "readonly");
+        const store = transaction.objectStore("files");
+        const files = await new Promise(resolve => {
+            const req = store.getAll();
+            req.onsuccess = () => resolve(req.result);
+        });
+
+        if(files.length === 0) {
+            list.innerHTML = '<div class="empty-state"><i data-lucide="file-warning"></i><p>Sin archivos aún</p></div>';
+            lucide.createIcons();
+            return;
+        }
+
+        files.forEach(f => {
+            const sub = state.subs.find(s => s.id === f.subId) || {name: 'General'};
+            const div = document.createElement('div');
+            div.className = 'item-card';
+            div.innerHTML = `
+                <i data-lucide="${f.type.includes('pdf') ? 'file-text' : 'image'}" style="color:var(--text-dim)"></i>
+                <div style="flex:1">
+                    <div style="font-weight:700;">${f.name}</div>
+                    <small style="color:var(--text-dim)">${sub.name}</small>
+                </div>
+                <button onclick="viewFile(${f.id})" style="background:var(--accent); border:none; color:white; padding:8px 12px; border-radius:10px; font-size:0.7rem;">Ver</button>
+                <button onclick="deleteFile(${f.id})" style="color:var(--red); background:none; border:none; margin-left:10px;"><i data-lucide="x" style="width:18px;"></i></button>
+            `;
+            list.appendChild(div);
+        });
+        lucide.createIcons();
+    }
+
+    async function viewFile(id) {
+        const transaction = db.transaction(["files"], "readonly");
+        const store = transaction.objectStore("files");
+        const file = await new Promise(resolve => {
+            const req = store.get(id);
+            req.onsuccess = () => resolve(req.result);
+        });
+        const win = window.open();
+        win.document.write(`<iframe src="${file.base64}" frameborder="0" style="width:100%; height:100%;" allowfullscreen></iframe>`);
+    }
+
+    async function deleteFile(id) {
+        const transaction = db.transaction(["files"], "readwrite");
+        await transaction.objectStore("files").delete(id);
+        renderFiles();
+    }
+
+    // Tareas
+    function renderTasks() {
+        const list = document.getElementById('main-task-list');
+        list.innerHTML = '';
+        const filtered = state.tasks.filter(t => state.filter === 'all' || !t.done);
+        
+        if(filtered.length === 0) {
+            list.innerHTML = '<div class="empty-state"><i data-lucide="sparkles"></i><p>¡Todo listo!</p></div>';
+            lucide.createIcons();
+        }
+
+        filtered.forEach(t => {
+            const sub = state.subs.find(s => s.id === t.subId) || {name: 'General', color: '#888'};
+            const div = document.createElement('div');
+            div.className = 'item-card';
+            div.innerHTML = `
+                <div class="checkbox ${t.done ? 'checked' : ''}" onclick="toggleTask('${t.id}')">
+                    ${t.done ? '<i data-lucide="check" style="width:16px; height:16px;"></i>' : ''}
+                </div>
+                <div style="flex:1" onclick="openEditSheet('${t.id}')">
+                    <div style="font-weight:700; ${t.done ? 'text-decoration:line-through; color:var(--text-dim)' : ''}">${t.title}</div>
+                    <small style="color:${sub.color}">${sub.name}</small>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+        updateStats();
+        lucide.createIcons();
+    }
+
+    window.saveTask = () => {
+        const title = document.getElementById('task-title').value;
+        const subId = document.getElementById('task-sub').value;
+        const date = document.getElementById('task-date').value;
+        if(!title) return;
+        if(currentEditId) {
+            const t = state.tasks.find(x => x.id === currentEditId);
+            Object.assign(t, {title, subId, date});
+        } else {
+            state.tasks.push({id: Date.now().toString(), title, subId, date, done: false});
+        }
+        localStorage.setItem('tp_tasks', JSON.stringify(state.tasks));
+        renderTasks(); closeSheets();
+    };
+
+    window.toggleTask = (id) => {
+        const t = state.tasks.find(x => x.id === id);
+        t.done = !t.done;
+        localStorage.setItem('tp_tasks', JSON.stringify(state.tasks));
+        renderTasks();
+    };
+
+    // UI Utils
+    window.showView = (view, btn) => {
+        document.getElementById('view-home').classList.toggle('hidden', view !== 'home');
+        document.getElementById('view-files').classList.toggle('hidden', view !== 'files');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        btn.classList.add('active');
+        if(view === 'files') renderFiles();
+    };
+
+    window.openSheet = (id) => { 
+        if(id === 'sheet-subjects') renderSubjectEditor(); 
+        document.getElementById(id).classList.add('active'); 
+        document.getElementById('global-overlay').classList.add('active'); 
+        lucide.createIcons();
+    };
+
+    window.closeSheets = () => { 
+        document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active')); 
+        document.getElementById('global-overlay').classList.remove('active'); 
+    };
+
+    function updateSelects() {
+        const html = state.subs.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        document.getElementById('task-sub').innerHTML = html;
+        document.getElementById('file-sub').innerHTML = html;
+    }
+
+    function updateStats() {
+        document.getElementById('count-total').textContent = state.tasks.length;
+        document.getElementById('count-pend').textContent = state.tasks.filter(t => !t.done).length;
+        document.getElementById('count-done').textContent = state.tasks.filter(t => t.done).length;
+    }
+
+    window.openTaskSheet = () => { currentEditId = null; document.getElementById('sheet-task-title').textContent = "Nueva Tarea"; document.getElementById('task-title').value = ""; document.getElementById('sheet-task-del').style.display="none"; openSheet('sheet-task'); };
+    window.openEditSheet = (id) => { currentEditId = id; const t = state.tasks.find(x => x.id === id); document.getElementById('task-title').value = t.title; document.getElementById('sheet-task-del').style.display = "block"; openSheet('sheet-task'); };
+    window.deleteTask = () => { state.tasks = state.tasks.filter(t => t.id !== currentEditId); localStorage.setItem('tp_tasks', JSON.stringify(state.tasks)); renderTasks(); closeSheets(); };
+    window.setFilter = (f, btn) => { state.filter = f; document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); btn.classList.add('active'); renderTasks(); };
+
+    function renderSubjectEditor() {
+        const container = document.getElementById('subject-editor-list');
+        container.innerHTML = state.subs.map((s, i) => `
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <input type="text" class="form-control sub-input" value="${s.name}" style="margin:0">
+                <button onclick="this.parentElement.remove()" style="color:var(--red); background:none; border:none;"><i data-lucide="trash-2" style="width:18px;"></i></button>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    window.addNewSubjectField = () => {
+        const div = document.createElement('div');
+        div.style.display = "flex"; div.style.gap = "10px"; div.style.marginBottom = "10px";
+        div.innerHTML = `<input type="text" class="form-control sub-input" placeholder="Materia" style="margin:0"><button onclick="this.parentElement.remove()" style="color:var(--red); background:none; border:none;"><i data-lucide="trash-2" style="width:18px;"></i></button>`;
+        document.getElementById('subject-editor-list').appendChild(div);
+        lucide.createIcons();
+    };
+
+    window.saveAllSubjects = () => {
+        const inputs = document.querySelectorAll('.sub-input');
+        const newSubs = [];
+        inputs.forEach((input, i) => {
+            if(input.value.trim()) newSubs.push({ id: "s"+Date.now()+i, name: input.value.trim(), color: '#7c3aed' });
+        });
+        state.subs = newSubs;
+        localStorage.setItem('tp_subs', JSON.stringify(state.subs));
+        renderAll(); closeSheets();
+    };
+
+</script>
+</body>
+</html>
