@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#050510">
-    <title>Gestor Escolar Ultra</title>
+    <title> Tareas </title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     
@@ -18,6 +18,9 @@
             --text-dim: #94a3b8;
             --border: rgba(255, 255, 255, 0.1);
             --red: #ff4d4d;
+            --green: #10b981;
+            --blue: #3b82f6;
+            --yellow: #f59e0b;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -27,360 +30,792 @@
         .hidden { display: none !important; }
 
         header { padding: 50px 24px 20px; display: flex; justify-content: space-between; align-items: center; }
-        
-        /* Stats */
+
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 24px; }
         .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px 5px; text-align: center; }
         .stat-num { font-size: 1.4rem; font-weight: 800; display: block; }
         .stat-label { font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; }
 
-        /* Tabs */
         .tabs { display: flex; gap: 10px; padding: 20px 24px; }
-        .tab { background: transparent; color: var(--text-dim); border: none; font-weight: 700; padding: 10px 15px; border-radius: 12px; cursor: pointer; transition: 0.3s; }
+        .tab { background: transparent; color: var(--text-dim); border: none; font-weight: 700; padding: 10px 15px; border-radius: 12px; cursor: pointer; transition: 0.3s; font-size: 0.85rem; font-family: inherit; }
         .tab.active { background: var(--accent); color: white; }
 
-        /* Items */
-        .item-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 18px; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .item-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 18px; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; transition: transform 0.2s; cursor: pointer; }
+        .item-card:active { transform: scale(0.98); }
 
-        .checkbox { width: 24px; height: 24px; border-radius: 8px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; color: white; }
-        .checkbox.checked { background: var(--accent); border-color: var(--accent); }
+        .checkbox { width: 24px; height: 24px; min-width: 24px; border-radius: 8px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer; }
+        .checkbox.checked { background: var(--green); border-color: var(--green); }
 
-        /* Bottom Nav con Iconos */
-        .bottom-nav { 
+        .priority { padding: 4px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; display: inline-block; margin-left: 6px; }
+        .priority-high   { background: rgba(255,77,77,0.2);   color: #ff4d4d; border: 1px solid rgba(255,77,77,0.3); }
+        .priority-medium { background: rgba(245,158,11,0.2);  color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+        .priority-low    { background: rgba(16,185,129,0.2);  color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+
+        /* NAV */
+        .bottom-nav {
             position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 380px; height: 70px;
-            background: rgba(15, 15, 30, 0.95); backdrop-filter: blur(20px); 
+            background: rgba(15,15,30,0.95); backdrop-filter: blur(20px);
             border: 1px solid var(--border); border-radius: 25px;
-            display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; z-index: 1000;
+            display: flex; align-items: center; justify-content: space-between; z-index: 1000;
+            padding: 0 10px;
         }
-        .nav-item { color: var(--text-dim); border: none; background: none; cursor: pointer; justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.3s; }
+        .nav-item { color: var(--text-dim); border: none; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.3s; flex: 1; font-family: inherit; }
+        .nav-item span { font-size: 0.6rem; font-weight: 700; }
         .nav-item i { width: 22px; height: 22px; }
         .nav-item.active { color: var(--accent); }
-        
-        .fab-wrapper { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
-        .fab { 
-            width: 60px; height: 60px; background: var(--accent); border-radius: 20px; 
-            border: none; color: white; cursor: pointer;
-            position: absolute; top: -30px; 
-            box-shadow: 0 10px 25px var(--accent-glow);
-            display: flex; justify-content: center; align-items: center;
+
+        .fab-wrapper { width: 70px; height: 100%; display: flex; justify-content: center; align-items: center; position: relative; }
+        .fab {
+            width: 58px; height: 58px; background: var(--accent); border-radius: 20px;
+            border: none; color: white; cursor: pointer; position: absolute; top: -25px;
+            box-shadow: 0 10px 25px var(--accent-glow); display: flex; justify-content: center; align-items: center;
+            transition: transform 0.2s;
         }
+        .fab:active { transform: scale(0.9); }
         .fab i { width: 30px; height: 30px; }
 
-        /* Modales */
-        .bottom-sheet { position: fixed; bottom: 0; width: 100%; max-width: 420px; background: #0f0f1a; border-radius: 30px 30px 0 0; padding: 30px 24px; z-index: 2000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-top: 1px solid var(--border); }
+        /* SHEETS */
+        .bottom-sheet {
+            position: fixed; bottom: 0; width: 100%; max-width: 420px;
+            background: #0f0f1a; border-radius: 30px 30px 0 0;
+            padding: 30px 24px 40px; z-index: 2000;
+            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+            border-top: 1px solid var(--border); max-height: 85vh; overflow-y: auto;
+            left: 50%; margin-left: -210px;
+        }
+        @media (max-width: 420px) { .bottom-sheet { left: 0; margin-left: 0; } }
         .bottom-sheet.active { transform: translateY(0); }
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 1500; display: none; }
         .overlay.active { display: block; }
+        .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 4px; margin: 0 auto 20px; }
 
-        .form-control { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; padding: 14px; border-radius: 14px; margin-bottom: 12px; outline: none; }
-        .btn { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .form-control {
+            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            color: white; padding: 14px; border-radius: 14px; margin-bottom: 12px;
+            outline: none; transition: border-color 0.2s; font-family: inherit; font-size: 0.9rem;
+        }
+        .form-control:focus { border-color: var(--accent); }
+        .form-control option { background: #1a1a2e; }
+        textarea.form-control { resize: vertical; min-height: 80px; }
+        
+        /* Estilo específico para input date en tema oscuro */
+        input[type="date"].form-control {
+            color-scheme: dark;
+        }
+
+        .btn {
+            width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            gap: 8px; font-family: inherit; font-size: 0.95rem; transition: transform 0.15s;
+        }
+        .btn:active { transform: scale(0.98); }
         .btn-primary { background: var(--accent); color: white; }
+        .btn-danger  { background: rgba(255,77,77,0.15); color: var(--red); border: 1px solid rgba(255,77,77,0.3); }
+        .btn-ghost   { background: var(--card); color: var(--text-main); border: 1px solid var(--border); }
 
-        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-dim); }
-        .empty-state i { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.5; }
+        .progress-container { margin: 20px 24px 0; background: var(--card); border-radius: 12px; overflow: hidden; height: 6px; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width 0.5s ease; }
+
+        .note-card { background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); border-left: 3px solid var(--accent); margin-bottom: 12px; padding: 16px; border-radius: 16px; }
+
+        .toast {
+            position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%);
+            background: rgba(20,20,40,0.97); color: white; padding: 12px 20px;
+            border-radius: 14px; z-index: 5000; border: 1px solid var(--border);
+            white-space: nowrap; backdrop-filter: blur(10px);
+            animation: fadeToast 0.3s ease;
+        }
+        @keyframes fadeToast { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+        .search-bar { margin: 24px 24px 16px; padding: 12px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; display: flex; align-items: center; gap: 10px; }
+        .search-bar i { width: 18px; height: 18px; opacity: 0.5; flex-shrink: 0; }
+        .search-bar input { background: none; border: none; color: white; flex: 1; outline: none; font-family: inherit; font-size: 0.9rem; }
+        .search-bar input::placeholder { color: var(--text-dim); }
+
+        .empty-state { text-align: center; padding: 50px 20px; color: var(--text-dim); }
+        .empty-state i { width: 40px; height: 40px; margin: 0 auto 12px; display: block; opacity: 0.4; }
+
+        /* Subjects editor */
+        .sub-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .sub-row input.form-control { margin-bottom: 0; flex: 1; }
+        .sub-row input[type="color"] { width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 10px; background: none; cursor: pointer; padding: 3px; flex-shrink: 0; }
+        .sub-row .del-btn { background: none; border: none; color: var(--red); cursor: pointer; padding: 6px; flex-shrink: 0; }
+
+        /* Stats */
+        .stat-prog-row { margin-bottom: 14px; }
+        .stat-prog-header { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; }
+        .stat-prog-bg { background: var(--card); border-radius: 8px; overflow: hidden; height: 7px; }
+        .stat-prog-fill { height: 100%; border-radius: 8px; transition: width 0.6s ease; }
     </style>
 </head>
 <body>
-
 <div class="app-container">
+
+    <!-- ── HOME ── -->
     <div id="view-home">
         <header>
-            <div><h1>Hola ✨</h1><p id="header-date" style="color: var(--text-dim); font-size: 0.8rem;"></p></div>
-            <button onclick="openSheet('sheet-subjects')" style="background:var(--card); border:1px solid var(--border); padding:10px 15px; border-radius:12px; color:white; display:flex; align-items:center; gap:8px; font-size: 0.8rem;">
-                <i data-lucide="book-open" style="width:16px;"></i> Materias
+            <div>
+                <h1 id="greeting" style="font-size:1.4rem; font-weight:800;">Hola ✨</h1>
+                <p id="header-date" style="color:var(--text-dim); font-size:0.8rem; margin-top:4px;"></p>
+            </div>
+            <button onclick="openSheet('sheet-subjects')" style="background:var(--card); border:1px solid var(--border); padding:10px 15px; border-radius:12px; color:white; display:flex; align-items:center; gap:8px; font-size:0.8rem; font-family:inherit; cursor:pointer;">
+                <i data-lucide="book-open" style="width:16px;height:16px;"></i> Materias
             </button>
         </header>
-        <div class="stats-grid">
+        <div class="progress-container"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+        <div class="stats-grid" style="margin-top:16px;">
             <div class="stat-card"><span class="stat-num" id="count-total">0</span><span class="stat-label">Total</span></div>
             <div class="stat-card"><span class="stat-num" id="count-pend">0</span><span class="stat-label">Pendientes</span></div>
             <div class="stat-card"><span class="stat-num" id="count-done">0</span><span class="stat-label">Listas</span></div>
         </div>
+        <div class="search-bar">
+            <i data-lucide="search"></i>
+            <input type="text" id="search-tasks" placeholder="Buscar tareas..." oninput="searchTasks()">
+        </div>
         <div class="tabs">
             <button class="tab active" onclick="setFilter('all', this)">Todas</button>
             <button class="tab" onclick="setFilter('pending', this)">Pendientes</button>
+            <button class="tab" onclick="setFilter('completed', this)">Hechas</button>
         </div>
         <div id="main-task-list" style="padding:0 24px;"></div>
     </div>
 
-    <div id="view-files" class="hidden">
-        <header><div><h1>Librería</h1><p style="color:var(--text-dim); font-size:0.8rem;">Tus documentos de estudio</p></div></header>
+    <!-- ── NOTAS ── -->
+    <div id="view-notes" class="hidden">
+        <header>
+            <div>
+                <h1 style="font-size:1.4rem; font-weight:800;">Notas</h1>
+                <p style="color:var(--text-dim); font-size:0.8rem; margin-top:4px;">Apuntes rápidos</p>
+            </div>
+        </header>
         <div style="padding:0 24px 20px;">
-            <button class="btn" onclick="openSheet('sheet-upload')" style="background:var(--card); border:1px dashed var(--border); color:white;">
-                <i data-lucide="upload-cloud"></i> Subir Recurso
+            <button class="btn btn-ghost" onclick="openSheet('sheet-note')">
+                <i data-lucide="pen-tool"></i> Nueva Nota
+            </button>
+        </div>
+        <div id="notes-list" style="padding:0 24px;"></div>
+    </div>
+
+    <!-- ── ARCHIVOS ── -->
+    <div id="view-files" class="hidden">
+        <header>
+            <div>
+                <h1 style="font-size:1.4rem; font-weight:800;">Librería</h1>
+                <p style="color:var(--text-dim); font-size:0.8rem; margin-top:4px;">Documentos de estudio</p>
+            </div>
+        </header>
+        <div style="padding:0 24px 20px;">
+            <button class="btn btn-ghost" onclick="openSheet('sheet-upload')">
+                <i data-lucide="upload-cloud"></i> Subir Archivo
             </button>
         </div>
         <div id="main-file-list" style="padding:0 24px;"></div>
     </div>
 
+    <!-- ── STATS ── -->
+    <div id="view-stats" class="hidden">
+        <header>
+            <div>
+                <h1 style="font-size:1.4rem; font-weight:800;">Estadísticas</h1>
+                <p style="color:var(--text-dim); font-size:0.8rem; margin-top:4px;">Tu progreso académico</p>
+            </div>
+        </header>
+        <div id="stats-content" style="padding:0 24px 24px;"></div>
+    </div>
+
+    <!-- ── NAV ── -->
     <nav class="bottom-nav">
-        <button class="nav-item active" onclick="showView('home', this)">
-            <i data-lucide="layout-grid"></i>
-            <span style="font-size:0.6rem; font-weight:700;">Inicio</span>
+        <button class="nav-item active" id="nav-home" onclick="showView('home', this)">
+            <i data-lucide="layout-grid"></i><span>Inicio</span>
+        </button>
+        <button class="nav-item" id="nav-notes" onclick="showView('notes', this)">
+            <i data-lucide="file-text"></i><span>Notas</span>
         </button>
         <div class="fab-wrapper">
             <button class="fab" onclick="openTaskSheet()">
                 <i data-lucide="plus"></i>
             </button>
         </div>
-        <button class="nav-item" onclick="showView('files', this)">
-            <i data-lucide="folder-closed"></i>
-            <span style="font-size:0.6rem; font-weight:700;">Archivos</span>
+        <button class="nav-item" id="nav-files" onclick="showView('files', this)">
+            <i data-lucide="folder-closed"></i><span>Files</span>
+        </button>
+        <button class="nav-item" id="nav-stats" onclick="showView('stats', this)">
+            <i data-lucide="bar-chart-2"></i><span>Stats</span>
         </button>
     </nav>
 
     <div class="overlay" id="global-overlay" onclick="closeSheets()"></div>
 
-    <div class="bottom-sheet" id="sheet-upload">
-        <h2 style="margin-bottom:20px;">Subir Recurso</h2>
-        <input type="text" id="file-name" class="form-control" placeholder="Nombre del recurso">
-        <select id="file-sub" class="form-control"></select>
-        <input type="file" id="file-input" class="form-control" accept="application/pdf,image/*">
-        <button class="btn btn-primary" onclick="processAndSaveFile()">
-            <i data-lucide="save"></i> Guardar Recurso
-        </button>
-    </div>
-
+    <!-- ── SHEET: TAREA ── -->
     <div class="bottom-sheet" id="sheet-task">
+        <div class="sheet-handle"></div>
         <h2 id="sheet-task-title" style="margin-bottom:20px;">Tarea</h2>
         <input type="text" id="task-title" class="form-control" placeholder="Título de la tarea">
         <select id="task-sub" class="form-control"></select>
+        <!-- NUEVO SELECTOR DE FECHA -->
+        <label style="font-size:0.8rem; color:var(--text-dim); margin-bottom:6px; display:block;">Fecha de entrega (Opcional)</label>
         <input type="date" id="task-date" class="form-control">
+        
+        <select id="task-priority" class="form-control">
+            <option value="low">🟢 Baja prioridad</option>
+            <option value="medium">🟡 Media prioridad</option>
+            <option value="high">🔴 Alta prioridad</option>
+        </select>
+        <textarea id="task-notes-input" class="form-control" placeholder="Notas adicionales..."></textarea>
         <button class="btn btn-primary" onclick="saveTask()">
             <i data-lucide="check-circle"></i> Confirmar
         </button>
-        <button class="btn" id="sheet-task-del" onclick="deleteTask()" style="display:none; color:var(--red); background:none; margin-top:10px;">
-            <i data-lucide="trash-2"></i> Eliminar Tarea
+        <button class="btn btn-danger" id="sheet-task-del" onclick="deleteTask()" style="display:none; margin-top:10px;">
+            <i data-lucide="trash-2"></i> Eliminar tarea
         </button>
     </div>
 
-    <div class="bottom-sheet" id="sheet-subjects">
-        <h2 style="margin-bottom:20px;">Materias</h2>
-        <div id="subject-editor-list" style="max-height: 250px; overflow-y: auto;"></div>
-        <button class="btn" onclick="addNewSubjectField()" style="background:var(--card); color:white; margin:10px 0;">
-            <i data-lucide="plus-circle"></i> Nueva Materia
+    <!-- ── SHEET: NOTA ── -->
+    <div class="bottom-sheet" id="sheet-note">
+        <div class="sheet-handle"></div>
+        <h2 style="margin-bottom:20px;">Nueva Nota</h2>
+        <input type="text" id="note-title" class="form-control" placeholder="Título">
+        <textarea id="note-content" class="form-control" placeholder="Contenido..."></textarea>
+        <select id="note-sub" class="form-control"></select>
+        <button class="btn btn-primary" onclick="saveNote()">
+            <i data-lucide="save"></i> Guardar Nota
         </button>
-        <button class="btn btn-primary" onclick="saveAllSubjects()">Aplicar</button>
     </div>
-</div>
+
+    <!-- ── SHEET: ARCHIVO ── -->
+    <div class="bottom-sheet" id="sheet-upload">
+        <div class="sheet-handle"></div>
+        <h2 style="margin-bottom:20px;">Subir Archivo </h2>
+        <input type="text" id="file-name" class="form-control" placeholder="Nombre del archivo ">
+        <select id="file-sub" class="form-control"></select>
+        <input type="file" id="file-input" class="form-control" accept="application/pdf,image/*" style="color:var(--text-dim); padding:10px 14px;">
+        <button class="btn btn-primary" onclick="processAndSaveFile()" style="margin-top:4px;">
+            <i data-lucide="upload-cloud"></i> Guardar
+        </button>
+    </div>
+
+    <!-- ── SHEET: MATERIAS ── -->
+    <div class="bottom-sheet" id="sheet-subjects">
+        <div class="sheet-handle"></div>
+        <h2 style="margin-bottom:20px;">Materias</h2>
+        <div id="subject-editor-list" style="max-height:260px; overflow-y:auto; margin-bottom:12px;"></div>
+        <button class="btn btn-ghost" onclick="addNewSubjectField()" style="margin-bottom:10px;">
+            <i data-lucide="plus-circle"></i> Nueva materia
+        </button>
+        <button class="btn btn-primary" onclick="saveAllSubjects()">
+            <i data-lucide="check"></i> Aplicar
+        </button>
+    </div>
+
+</div><!-- /app-container -->
 
 <script>
-    let db;
-    let state = { tasks: [], subs: [], filter: 'all' };
-    let currentEditId = null;
+// ─── Estado global ────────────────────────────────────────────────────────────
+let db = null;
+let currentEditId = null;
+let toastTimer = null;
+let state = { tasks: [], subs: [], notes: [], filter: 'all', searchTerm: '' };
 
-    // IndexedDB
-    const request = indexedDB.open("EscolarDB", 1);
-    request.onupgradeneeded = e => {
-        db = e.target.result;
-        if (!db.objectStoreNames.contains("files")) db.createObjectStore("files", { keyPath: "id", autoIncrement: true });
-    };
-    request.onsuccess = e => { db = e.target.result; init(); };
+// ─── IndexedDB ────────────────────────────────────────────────────────────────
+const dbReq = indexedDB.open("EscolarDB", 3);
+dbReq.onupgradeneeded = function(e) {
+    const _db = e.target.result;
+    if (!_db.objectStoreNames.contains("files")) {
+        _db.createObjectStore("files", { keyPath: "id", autoIncrement: true });
+    }
+};
+dbReq.onsuccess = function(e) {
+    db = e.target.result;
+    init();
+};
+dbReq.onerror = function() {
+    init(); // continuar sin archivos
+};
 
-    function init() {
-        state.tasks = JSON.parse(localStorage.getItem('tp_tasks') || '[]');
-        state.subs = JSON.parse(localStorage.getItem('tp_subs') || '[{"id":"1","name":"General","color":"#7c3aed"}]');
-        document.getElementById('header-date').textContent = new Date().toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' });
-        renderAll();
+// ─── Init ─────────────────────────────────────────────────────────────────────
+function init() {
+    state.tasks = JSON.parse(localStorage.getItem('tp_tasks') || '[]');
+    state.subs  = JSON.parse(localStorage.getItem('tp_subs')  || '[{"id":"1","name":"General","color":"#7c3aed"}]');
+    state.notes = JSON.parse(localStorage.getItem('tp_notes') || '[]');
+
+    const h = new Date().getHours();
+    document.getElementById('greeting').textContent =
+        (h < 12 ? "Buenos días" : h < 18 ? "Buenas tardes" : "Buenas noches") + " ✨";
+    document.getElementById('header-date').textContent =
+        new Date().toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' });
+
+    renderAll();
+}
+
+function renderAll() {
+    renderTasks();
+    renderNotes();
+    renderFiles();
+    updateSelects();
+    updateProgress();
+    icons();
+}
+
+function icons() {
+    setTimeout(function() {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }, 30);
+}
+
+// ─── Vistas ───────────────────────────────────────────────────────────────────
+function showView(viewName, btn) {
+    ['home','notes','files','stats'].forEach(function(v) {
+        document.getElementById('view-' + v).classList.toggle('hidden', v !== viewName);
+    });
+    document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+    if (viewName === 'stats')  renderStats();
+    if (viewName === 'files')  renderFiles();
+    if (viewName === 'notes')  renderNotes();
+}
+
+// ─── Progreso y contadores ────────────────────────────────────────────────────
+function updateProgress() {
+    const total = state.tasks.length;
+    const done  = state.tasks.filter(function(t){ return t.done; }).length;
+    const pct   = total ? Math.round((done / total) * 100) : 0;
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('count-total').textContent = total;
+    document.getElementById('count-pend').textContent  = total - done;
+    document.getElementById('count-done').textContent  = done;
+}
+
+// ─── Selects ──────────────────────────────────────────────────────────────────
+function updateSelects() {
+    ['task-sub','note-sub','file-sub'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const prev = el.value;
+        el.innerHTML = state.subs.map(function(s){
+            return '<option value="' + s.id + '">' + s.name + '</option>';
+        }).join('');
+        if (prev) el.value = prev;
+    });
+}
+
+// ─── Búsqueda y filtro ────────────────────────────────────────────────────────
+function searchTasks() {
+    state.searchTerm = document.getElementById('search-tasks').value.toLowerCase();
+    renderTasks();
+}
+
+function setFilter(f, btn) {
+    state.filter = f;
+    document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+    renderTasks();
+}
+
+// ─── Tareas ───────────────────────────────────────────────────────────────────
+function renderTasks() {
+    const list = document.getElementById('main-task-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    let filtered = state.tasks.filter(function(t) {
+        const mf = state.filter === 'all' ||
+                   (state.filter === 'pending'   && !t.done) ||
+                   (state.filter === 'completed' &&  t.done);
+        const ms = t.title.toLowerCase().indexOf(state.searchTerm) > -1;
+        return mf && ms;
+    });
+
+    // Pendientes primero, luego por prioridad
+    filtered.sort(function(a, b) {
+        if (a.done !== b.done) return a.done ? 1 : -1;
+        const p = { high:0, medium:1, low:2 };
+        return (p[a.priority]||2) - (p[b.priority]||2);
+    });
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty-state"><i data-lucide="sparkles"></i><p>¡Todo listo!</p></div>';
+        icons(); return;
     }
 
-    function renderAll() {
-        renderTasks();
-        renderFiles();
-        updateSelects();
-        lucide.createIcons(); // Inicializa los iconos cada vez que renderizamos
-    }
+    filtered.forEach(function(t) {
+        const sub = state.subs.find(function(s){ return s.id === t.subId; }) || { name:'General', color:'#888' };
+        const pLabel = t.priority === 'high' ? 'Alta' : t.priority === 'medium' ? 'Media' : 'Baja';
+        const pClass = 'priority-' + (t.priority || 'low');
 
-    // Archivos
-    async function processAndSaveFile() {
-        const name = document.getElementById('file-name').value;
-        const subId = document.getElementById('file-sub').value;
-        const file = document.getElementById('file-input').files[0];
-        if(!name || !file) return;
-
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const transaction = db.transaction(["files"], "readwrite");
-            const store = transaction.objectStore("files");
-            await store.add({ name, subId, base64: e.target.result, type: file.type });
-            renderFiles();
-            closeSheets();
-        };
-        reader.readAsDataURL(file);
-    }
-
-    async function renderFiles() {
-        const list = document.getElementById('main-file-list');
-        list.innerHTML = '';
-        const transaction = db.transaction(["files"], "readonly");
-        const store = transaction.objectStore("files");
-        const files = await new Promise(resolve => {
-            const req = store.getAll();
-            req.onsuccess = () => resolve(req.result);
-        });
-
-        if(files.length === 0) {
-            list.innerHTML = '<div class="empty-state"><i data-lucide="file-warning"></i><p>Sin archivos aún</p></div>';
-            lucide.createIcons();
-            return;
+        // Formateo de fecha
+        let dateHtml = '';
+        if (t.dueDate) {
+            const d = new Date(t.dueDate + 'T00:00:00'); // Forzar zona horaria local
+            const dateStr = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+            dateHtml = '<small style="color:var(--text-dim); margin-left:auto; font-size:0.7rem;">📅 ' + dateStr + '</small>';
         }
 
-        files.forEach(f => {
-            const sub = state.subs.find(s => s.id === f.subId) || {name: 'General'};
-            const div = document.createElement('div');
-            div.className = 'item-card';
-            div.innerHTML = `
-                <i data-lucide="${f.type.includes('pdf') ? 'file-text' : 'image'}" style="color:var(--text-dim)"></i>
-                <div style="flex:1">
-                    <div style="font-weight:700;">${f.name}</div>
-                    <small style="color:var(--text-dim)">${sub.name}</small>
-                </div>
-                <button onclick="viewFile(${f.id})" style="background:var(--accent); border:none; color:white; padding:8px 12px; border-radius:10px; font-size:0.7rem;">Ver</button>
-                <button onclick="deleteFile(${f.id})" style="color:var(--red); background:none; border:none; margin-left:10px;"><i data-lucide="x" style="width:18px;"></i></button>
-            `;
-            list.appendChild(div);
-        });
-        lucide.createIcons();
-    }
-
-    async function viewFile(id) {
-        const transaction = db.transaction(["files"], "readonly");
-        const store = transaction.objectStore("files");
-        const file = await new Promise(resolve => {
-            const req = store.get(id);
-            req.onsuccess = () => resolve(req.result);
-        });
-        const win = window.open();
-        win.document.write(`<iframe src="${file.base64}" frameborder="0" style="width:100%; height:100%;" allowfullscreen></iframe>`);
-    }
-
-    async function deleteFile(id) {
-        const transaction = db.transaction(["files"], "readwrite");
-        await transaction.objectStore("files").delete(id);
-        renderFiles();
-    }
-
-    // Tareas
-    function renderTasks() {
-        const list = document.getElementById('main-task-list');
-        list.innerHTML = '';
-        const filtered = state.tasks.filter(t => state.filter === 'all' || !t.done);
-        
-        if(filtered.length === 0) {
-            list.innerHTML = '<div class="empty-state"><i data-lucide="sparkles"></i><p>¡Todo listo!</p></div>';
-            lucide.createIcons();
-        }
-
-        filtered.forEach(t => {
-            const sub = state.subs.find(s => s.id === t.subId) || {name: 'General', color: '#888'};
-            const div = document.createElement('div');
-            div.className = 'item-card';
-            div.innerHTML = `
-                <div class="checkbox ${t.done ? 'checked' : ''}" onclick="toggleTask('${t.id}')">
-                    ${t.done ? '<i data-lucide="check" style="width:16px; height:16px;"></i>' : ''}
-                </div>
-                <div style="flex:1" onclick="openEditSheet('${t.id}')">
-                    <div style="font-weight:700; ${t.done ? 'text-decoration:line-through; color:var(--text-dim)' : ''}">${t.title}</div>
-                    <small style="color:${sub.color}">${sub.name}</small>
-                </div>
-            `;
-            list.appendChild(div);
-        });
-        updateStats();
-        lucide.createIcons();
-    }
-
-    window.saveTask = () => {
-        const title = document.getElementById('task-title').value;
-        const subId = document.getElementById('task-sub').value;
-        const date = document.getElementById('task-date').value;
-        if(!title) return;
-        if(currentEditId) {
-            const t = state.tasks.find(x => x.id === currentEditId);
-            Object.assign(t, {title, subId, date});
-        } else {
-            state.tasks.push({id: Date.now().toString(), title, subId, date, done: false});
-        }
-        localStorage.setItem('tp_tasks', JSON.stringify(state.tasks));
-        renderTasks(); closeSheets();
-    };
-
-    window.toggleTask = (id) => {
-        const t = state.tasks.find(x => x.id === id);
-        t.done = !t.done;
-        localStorage.setItem('tp_tasks', JSON.stringify(state.tasks));
-        renderTasks();
-    };
-
-    // UI Utils
-    window.showView = (view, btn) => {
-        document.getElementById('view-home').classList.toggle('hidden', view !== 'home');
-        document.getElementById('view-files').classList.toggle('hidden', view !== 'files');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        btn.classList.add('active');
-        if(view === 'files') renderFiles();
-    };
-
-    window.openSheet = (id) => { 
-        if(id === 'sheet-subjects') renderSubjectEditor(); 
-        document.getElementById(id).classList.add('active'); 
-        document.getElementById('global-overlay').classList.add('active'); 
-        lucide.createIcons();
-    };
-
-    window.closeSheets = () => { 
-        document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active')); 
-        document.getElementById('global-overlay').classList.remove('active'); 
-    };
-
-    function updateSelects() {
-        const html = state.subs.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-        document.getElementById('task-sub').innerHTML = html;
-        document.getElementById('file-sub').innerHTML = html;
-    }
-
-    function updateStats() {
-        document.getElementById('count-total').textContent = state.tasks.length;
-        document.getElementById('count-pend').textContent = state.tasks.filter(t => !t.done).length;
-        document.getElementById('count-done').textContent = state.tasks.filter(t => t.done).length;
-    }
-
-    window.openTaskSheet = () => { currentEditId = null; document.getElementById('sheet-task-title').textContent = "Nueva Tarea"; document.getElementById('task-title').value = ""; document.getElementById('sheet-task-del').style.display="none"; openSheet('sheet-task'); };
-    window.openEditSheet = (id) => { currentEditId = id; const t = state.tasks.find(x => x.id === id); document.getElementById('task-title').value = t.title; document.getElementById('sheet-task-del').style.display = "block"; openSheet('sheet-task'); };
-    window.deleteTask = () => { state.tasks = state.tasks.filter(t => t.id !== currentEditId); localStorage.setItem('tp_tasks', JSON.stringify(state.tasks)); renderTasks(); closeSheets(); };
-    window.setFilter = (f, btn) => { state.filter = f; document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); btn.classList.add('active'); renderTasks(); };
-
-    function renderSubjectEditor() {
-        const container = document.getElementById('subject-editor-list');
-        container.innerHTML = state.subs.map((s, i) => `
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <input type="text" class="form-control sub-input" value="${s.name}" style="margin:0">
-                <button onclick="this.parentElement.remove()" style="color:var(--red); background:none; border:none;"><i data-lucide="trash-2" style="width:18px;"></i></button>
-            </div>
-        `).join('');
-        lucide.createIcons();
-    }
-
-    window.addNewSubjectField = () => {
         const div = document.createElement('div');
-        div.style.display = "flex"; div.style.gap = "10px"; div.style.marginBottom = "10px";
-        div.innerHTML = `<input type="text" class="form-control sub-input" placeholder="Materia" style="margin:0"><button onclick="this.parentElement.remove()" style="color:var(--red); background:none; border:none;"><i data-lucide="trash-2" style="width:18px;"></i></button>`;
-        document.getElementById('subject-editor-list').appendChild(div);
-        lucide.createIcons();
-    };
+        div.className = 'item-card';
+        div.innerHTML =
+            '<div class="checkbox ' + (t.done ? 'checked' : '') + '" onclick="event.stopPropagation(); toggleTask(\'' + t.id + '\')">' +
+                (t.done ? '<i data-lucide="check" style="width:14px;height:14px;color:white;"></i>' : '') +
+            '</div>' +
+            '<div style="flex:1;min-width:0;" onclick="openEditSheet(\'' + t.id + '\')">' +
+                '<div style="font-weight:700;' + (t.done ? 'text-decoration:line-through;opacity:0.5;' : '') + 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + t.title + '</div>' +
+                '<div style="display:flex;align-items:center;margin-top:4px;flex-wrap:wrap;gap:4px;">' +
+                    '<small style="color:' + sub.color + ';font-weight:600;">' + sub.name + '</small>' +
+                    '<span class="priority ' + pClass + '">' + pLabel + '</span>' +
+                    dateHtml + 
+                '</div>' +
+                (t.taskNotes ? '<small style="color:var(--text-dim);margin-top:4px;display:block;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + t.taskNotes + '</small>' : '') +
+            '</div>';
+        list.appendChild(div);
+    });
+    icons();
+}
 
-    window.saveAllSubjects = () => {
-        const inputs = document.querySelectorAll('.sub-input');
-        const newSubs = [];
-        inputs.forEach((input, i) => {
-            if(input.value.trim()) newSubs.push({ id: "s"+Date.now()+i, name: input.value.trim(), color: '#7c3aed' });
+function openTaskSheet() {
+    currentEditId = null;
+    document.getElementById('sheet-task-title').textContent = 'Nueva Tarea';
+    document.getElementById('task-title').value = '';
+    document.getElementById('task-priority').value = 'medium';
+    document.getElementById('task-notes-input').value = '';
+    document.getElementById('task-date').value = ''; // Resetear fecha
+    document.getElementById('sheet-task-del').style.display = 'none';
+    updateSelects();
+    openSheet('sheet-task');
+}
+
+function openEditSheet(id) {
+    const t = state.tasks.find(function(x){ return x.id === id; });
+    if (!t) return;
+    currentEditId = id;
+    document.getElementById('sheet-task-title').textContent = 'Editar Tarea';
+    document.getElementById('task-title').value = t.title;
+    document.getElementById('task-priority').value = t.priority || 'low';
+    document.getElementById('task-notes-input').value = t.taskNotes || '';
+    document.getElementById('task-date').value = t.dueDate || ''; // Cargar fecha
+    document.getElementById('sheet-task-del').style.display = 'flex';
+    updateSelects();
+    document.getElementById('task-sub').value = t.subId || '';
+    openSheet('sheet-task');
+}
+
+function saveTask() {
+    const title     = document.getElementById('task-title').value.trim();
+    const subId     = document.getElementById('task-sub').value;
+    const priority  = document.getElementById('task-priority').value;
+    const taskNotes = document.getElementById('task-notes-input').value.trim();
+    const dueDate   = document.getElementById('task-date').value; // Capturar fecha
+
+    if (!title) { showToast("⚠️ Escribe un título"); return; }
+
+    if (currentEditId) {
+        const t = state.tasks.find(function(x){ return x.id === currentEditId; });
+        if (t) { 
+            t.title = title; 
+            t.subId = subId; 
+            t.priority = priority; 
+            t.taskNotes = taskNotes; 
+            t.dueDate = dueDate; // Guardar fecha editada
+        }
+        showToast("✏️ Tarea actualizada");
+    } else {
+        state.tasks.push({ 
+            id: Date.now().toString(), 
+            title: title, 
+            subId: subId, 
+            priority: priority, 
+            taskNotes: taskNotes, 
+            dueDate: dueDate, // Guardar fecha nueva
+            done: false, 
+            created: new Date().toISOString() 
         });
-        state.subs = newSubs;
-        localStorage.setItem('tp_subs', JSON.stringify(state.subs));
-        renderAll(); closeSheets();
-    };
+        showToast("✅ Tarea creada");
+    }
+    localStorage.setItem('tp_tasks', JSON.stringify(state.tasks));
+    closeSheets();
+    renderTasks();
+    updateProgress();
+}
 
+function deleteTask() {
+    if (!currentEditId) return;
+    if (!confirm("¿Eliminar esta tarea?")) return;
+    state.tasks = state.tasks.filter(function(x){ return x.id !== currentEditId; });
+    localStorage.setItem('tp_tasks', JSON.stringify(state.tasks));
+    closeSheets();
+    renderTasks();
+    updateProgress();
+    showToast("🗑️ Tarea eliminada");
+}
+
+function toggleTask(id) {
+    const t = state.tasks.find(function(x){ return x.id === id; });
+    if (!t) return;
+    t.done = !t.done;
+    localStorage.setItem('tp_tasks', JSON.stringify(state.tasks));
+    renderTasks();
+    updateProgress();
+    showToast(t.done ? "🎉 ¡Completada!" : "🔄 Reactivada");
+}
+
+// ─── Notas ────────────────────────────────────────────────────────────────────
+function saveNote() {
+    const title   = document.getElementById('note-title').value.trim();
+    const content = document.getElementById('note-content').value.trim();
+    const subId   = document.getElementById('note-sub').value;
+    if (!title) { showToast("⚠️ Escribe un título"); return; }
+
+    state.notes.push({ id: Date.now().toString(), title: title, content: content, subId: subId, date: new Date().toISOString() });
+    localStorage.setItem('tp_notes', JSON.stringify(state.notes));
+    document.getElementById('note-title').value = '';
+    document.getElementById('note-content').value = '';
+    closeSheets();
+    renderNotes();
+    showToast("📝 Nota guardada");
+}
+
+function renderNotes() {
+    const list = document.getElementById('notes-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (state.notes.length === 0) {
+        list.innerHTML = '<div class="empty-state"><i data-lucide="pen-tool"></i><p>Sin notas aún</p></div>';
+        icons(); return;
+    }
+
+    state.notes.slice().reverse().forEach(function(n) {
+        const sub = state.subs.find(function(s){ return s.id === n.subId; }) || { name:'General' };
+        const div = document.createElement('div');
+        div.className = 'note-card';
+        div.innerHTML =
+            '<div style="display:flex;justify-content:space-between;align-items:start;gap:10px;">' +
+                '<div style="flex:1;min-width:0;">' +
+                    '<strong>' + n.title + '</strong>' +
+                    '<small style="color:var(--text-dim);display:block;margin-top:2px;">' + sub.name + ' · ' + new Date(n.date).toLocaleDateString('es-ES') + '</small>' +
+                '</div>' +
+                '<button onclick="deleteNote(\'' + n.id + '\')" style="background:none;border:none;color:var(--red);cursor:pointer;padding:2px;">' +
+                    '<i data-lucide="trash-2" style="width:16px;height:16px;"></i>' +
+                '</button>' +
+            '</div>' +
+            (n.content ? '<p style="margin-top:10px;font-size:0.85rem;opacity:0.85;line-height:1.5;">' + n.content.substring(0, 200) + (n.content.length > 200 ? '…' : '') + '</p>' : '');
+        list.appendChild(div);
+    });
+    icons();
+}
+
+function deleteNote(id) {
+    if (!confirm("¿Eliminar esta nota?")) return;
+    state.notes = state.notes.filter(function(n){ return n.id !== id; });
+    localStorage.setItem('tp_notes', JSON.stringify(state.notes));
+    renderNotes();
+    showToast("🗑️ Nota eliminada");
+}
+
+// ─── Archivos ─────────────────────────────────────────────────────────────────
+function processAndSaveFile() {
+    const name  = document.getElementById('file-name').value.trim();
+    const subId = document.getElementById('file-sub').value;
+    const file  = document.getElementById('file-input').files[0];
+    if (!name || !file) { showToast("⚠️ Completa todos los campos"); return; }
+    if (!db)            { showToast("❌ Base de datos no disponible"); return; }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const tx  = db.transaction(["files"], "readwrite");
+        const req = tx.objectStore("files").add({ name: name, subId: subId, base64: e.target.result, type: file.type, date: new Date().toISOString() });
+        req.onsuccess = function() {
+            document.getElementById('file-name').value = '';
+            document.getElementById('file-input').value = '';
+            closeSheets();
+            renderFiles();
+            showToast("✅ Archivo guardado");
+        };
+    };
+    reader.readAsDataURL(file);
+}
+
+function renderFiles() {
+    const list = document.getElementById('main-file-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (!db) {
+        list.innerHTML = '<div class="empty-state"><i data-lucide="database"></i><p>Base de datos no disponible</p></div>';
+        icons(); return;
+    }
+
+    const tx  = db.transaction(["files"], "readonly");
+    const req = tx.objectStore("files").getAll();
+    req.onsuccess = function() {
+        const files = req.result;
+        if (files.length === 0) {
+            list.innerHTML = '<div class="empty-state"><i data-lucide="file-warning"></i><p>Sin archivos aún</p></div>';
+            icons(); return;
+        }
+        files.forEach(function(f) {
+            const sub  = state.subs.find(function(s){ return s.id === f.subId; }) || { name:'General' };
+            const icon = (f.type && f.type.includes('pdf')) ? 'file-text' : 'image';
+            const div  = document.createElement('div');
+            div.className = 'item-card';
+            div.innerHTML =
+                '<i data-lucide="' + icon + '" style="color:var(--text-dim);flex-shrink:0;"></i>' +
+                '<div style="flex:1;min-width:0;">' +
+                    '<div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + f.name + '</div>' +
+                    '<small style="color:var(--text-dim);">' + sub.name + ' · ' + new Date(f.date).toLocaleDateString('es-ES') + '</small>' +
+                '</div>' +
+                '<button onclick="viewFile(' + f.id + ')" style="background:var(--accent);border:none;color:white;padding:8px 12px;border-radius:10px;font-size:0.75rem;cursor:pointer;font-family:inherit;">Ver</button>' +
+                '<button onclick="deleteFile(' + f.id + ')" style="color:var(--red);background:none;border:none;margin-left:8px;cursor:pointer;display:flex;align-items:center;">' +
+                    '<i data-lucide="x" style="width:18px;height:18px;"></i>' +
+                '</button>';
+            list.appendChild(div);
+        });
+        icons();
+    };
+}
+
+function viewFile(id) {
+    if (!db) return;
+    const req = db.transaction(["files"], "readonly").objectStore("files").get(id);
+    req.onsuccess = function() {
+        const f = req.result;
+        if (!f) return;
+        const win = window.open('', '_blank');
+        if (win) {
+            win.document.write('<html><head><title>' + f.name + '</title></head><body style="margin:0"><iframe src="' + f.base64 + '" frameborder="0" style="width:100%;height:100vh;"></iframe></body></html>');
+            win.document.close();
+        }
+    };
+}
+
+function deleteFile(id) {
+    if (!confirm("¿Eliminar este archivo?")) return;
+    const tx = db.transaction(["files"], "readwrite");
+    tx.objectStore("files").delete(id);
+    tx.oncomplete = function() { renderFiles(); showToast("🗑️ Archivo eliminado"); };
+}
+
+// ─── Materias ─────────────────────────────────────────────────────────────────
+function openSubjectsSheet() {
+    const container = document.getElementById('subject-editor-list');
+    container.innerHTML = '';
+    state.subs.forEach(function(s) { addSubjectRow(s.id, s.name, s.color); });
+    openSheet('sheet-subjects');
+}
+
+function addSubjectRow(id, name, color) {
+    const container = document.getElementById('subject-editor-list');
+    const row = document.createElement('div');
+    row.className = 'sub-row';
+    row.dataset.id = id || ('new_' + Date.now() + Math.random().toString(36).slice(2));
+    row.innerHTML =
+        '<input type="text" class="form-control sub-name" value="' + (name || '') + '" placeholder="Nombre de la materia">' +
+        '<input type="color" value="' + (color || '#7c3aed') + '" class="sub-color">' +
+        '<button class="del-btn" onclick="this.closest(\'.sub-row\').remove()">' +
+            '<i data-lucide="x" style="width:18px;height:18px;"></i>' +
+        '</button>';
+    container.appendChild(row);
+    icons();
+}
+
+function addNewSubjectField() {
+    addSubjectRow(null, '', '#7c3aed');
+}
+
+function saveAllSubjects() {
+    const rows = document.querySelectorAll('#subject-editor-list .sub-row');
+    const newSubs = [];
+    rows.forEach(function(row) {
+        const name  = row.querySelector('.sub-name').value.trim();
+        const color = row.querySelector('.sub-color').value;
+        const id    = row.dataset.id;
+        if (name) newSubs.push({ id: id.startsWith('new_') ? Date.now().toString() + Math.random().toString(36).slice(2,6) : id, name: name, color: color });
+    });
+    if (newSubs.length === 0) { showToast("⚠️ Agrega al menos una materia"); return; }
+    state.subs = newSubs;
+    localStorage.setItem('tp_subs', JSON.stringify(state.subs));
+    updateSelects();
+    closeSheets();
+    showToast("✅ Materias guardadas");
+}
+
+// Override openSheet para sheet-subjects para auto-poblar
+const _openSheet = function(id) {
+    if (id === 'sheet-subjects') {
+        const container = document.getElementById('subject-editor-list');
+        container.innerHTML = '';
+        state.subs.forEach(function(s) { addSubjectRow(s.id, s.name, s.color); });
+    }
+    document.getElementById(id).classList.add('active');
+    document.getElementById('global-overlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+};
+
+// ─── Estadísticas ─────────────────────────────────────────────────────────────
+function renderStats() {
+    const div = document.getElementById('stats-content');
+    if (!div) return;
+
+    const total = state.tasks.length;
+    const done  = state.tasks.filter(function(t){ return t.done; }).length;
+    const pct   = total ? Math.round((done / total) * 100) : 0;
+
+    const bySub = {};
+    state.tasks.forEach(function(t) {
+        const sub = state.subs.find(function(s){ return s.id === t.subId; }) || { name:'General', color:'#888' };
+        if (!bySub[sub.name]) bySub[sub.name] = { total:0, done:0, color: sub.color };
+        bySub[sub.name].total++;
+        if (t.done) bySub[sub.name].done++;
+    });
+
+    let subsHtml = '';
+    Object.keys(bySub).forEach(function(name) {
+        const d = bySub[name];
+        const r = Math.round((d.done / d.total) * 100);
+        subsHtml +=
+            '<div class="stat-prog-row">' +
+                '<div class="stat-prog-header"><span style="font-weight:600;">' + name + '</span><span style="color:var(--text-dim);">' + d.done + '/' + d.total + ' · ' + r + '%</span></div>' +
+                '<div class="stat-prog-bg"><div class="stat-prog-fill" style="width:' + r + '%;background:' + d.color + ';"></div></div>' +
+            '</div>';
+    });
+
+    div.innerHTML =
+        '<div style="text-align:center;padding:24px;background:var(--card);border:1px solid var(--border);border-radius:20px;margin-bottom:20px;">' +
+            '<div style="font-size:3rem;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">' + pct + '%</div>' +
+            '<div style="color:var(--text-dim);margin-top:4px;">Tasa de finalización</div>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">' +
+            '<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;"><div style="font-size:1.6rem;font-weight:800;">' + total + '</div><div style="color:var(--text-dim);font-size:0.7rem;text-transform:uppercase;font-weight:700;margin-top:4px;">Total tareas</div></div>' +
+            '<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;"><div style="font-size:1.6rem;font-weight:800;color:var(--green);">' + done + '</div><div style="color:var(--text-dim);font-size:0.7rem;text-transform:uppercase;font-weight:700;margin-top:4px;">Completadas</div></div>' +
+        '</div>' +
+        (Object.keys(bySub).length > 0 ? '<h3 style="margin-bottom:16px;font-size:1rem;">📊 Por Materia</h3>' + subsHtml : '') +
+        '<div style="margin-top:16px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:16px;">' +
+            '<div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:6px;font-weight:700;text-transform:uppercase;">📝 Notas guardadas</div>' +
+            '<div style="font-size:1.6rem;font-weight:800;">' + state.notes.length + '</div>' +
+        '</div>';
+    icons();
+}
+
+// ─── UI Utils ─────────────────────────────────────────────────────────────────
+function openSheet(id) { _openSheet(id); }
+
+function closeSheets() {
+    document.querySelectorAll('.bottom-sheet').forEach(function(s){ s.classList.remove('active'); });
+    document.getElementById('global-overlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function showToast(msg) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    if (toastTimer) clearTimeout(toastTimer);
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    toastTimer = setTimeout(function(){ el.remove(); }, 2500);
+}
+
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeSheets(); });
 </script>
 </body>
 </html>
